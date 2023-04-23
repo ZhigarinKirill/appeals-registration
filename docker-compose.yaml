@@ -15,7 +15,7 @@ services:
     env_file:
       - .env
     ports:
-      - "5435:5432"
+      - 5435:5432
 
   rabbit:
     image: rabbitmq:3-management-alpine
@@ -41,7 +41,7 @@ services:
     env_file:
       - .env
     ports:
-      - "8888:8888"
+      - 8888:8888
     depends_on:
       - rabbit
       - postgres
@@ -61,7 +61,7 @@ services:
     env_file:
       - .env
     ports:
-      - "${APPEALS_WRITER_PORT}:8000"
+      - ${APPEALS_WRITER_PORT}:8000
     depends_on:
       - rabbit
     links:
