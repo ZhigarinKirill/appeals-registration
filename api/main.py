@@ -19,7 +19,7 @@ TORNADO_PORT=os.environ.get('TORNADO_PORT', 8888)
 class MainHandler(tornado.web.RequestHandler):
     async def post(self):
         message = tornado.escape.json_decode(self.request.body)
-        logger.info('Post request with body: {message}')
+        logger.info(f'Post request with body: {message}')
         await self.application.producer.publish(message)
         self.write("OK")
 
