@@ -1,0 +1,1 @@
+from common.database.database import appeals_table, appeals_database, engine, metadata
