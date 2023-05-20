@@ -25,13 +25,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: zhigarink/appeals-registration.writer
+          images: zhigarink/appeals-registration
 
       - name: Build and push Docker image
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
           context: .
-          file: ./api/Dockerfile
+          file: ./appeals_writer/Dockerfile
           push: true
-          tags: writer, latest, ${{ github.run_number }}
+          tags: appeals-writer:${{ github.run_number }}
           labels: ${{ steps.meta.outputs.labels }}
