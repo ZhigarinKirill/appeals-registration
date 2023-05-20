@@ -35,5 +35,5 @@ jobs:
           context: .
           file: ./api/Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}:api:${{ github.run_number }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
