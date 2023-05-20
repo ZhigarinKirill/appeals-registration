@@ -1,0 +1,17 @@
+name: Push Image
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build-container:
+    name: Build Docker container image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish to DockerHub
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          repository: zhigarink/appeals-registration
+          tags: latest, ${{ github.run_number }}
