@@ -1,8 +1,13 @@
-name: Push Image
+name: API service
 on:
   push:
     branches:
       - master
+    paths:
+      - appeals_writer/**
+      - common/**
+      - models/**
+
 jobs:
   build-container:
     name: Build Docker container image
@@ -28,5 +33,5 @@ jobs:
           context: .
           file: ./api/Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: api, latest, ${{ github.run_number }}
           labels: ${{ steps.meta.outputs.labels }}
