@@ -6,6 +6,7 @@ on:
     paths:
       - appeals_writer/**
       - common/**
+      - .github/workflows/docker-appeals-writer-image-push.yml
 jobs:
   build-container:
     name: Build Docker container image

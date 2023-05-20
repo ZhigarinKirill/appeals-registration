@@ -7,6 +7,7 @@ on:
       - appeals_writer/**
       - common/**
       - models/**
+      - .github/workflows/docker-api-image-push.yml
 
 jobs:
   build-container:
