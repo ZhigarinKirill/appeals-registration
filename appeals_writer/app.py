@@ -1,20 +1,26 @@
 from typing import Dict, List
 from fastapi import FastAPI
 from common.rabbit.pika_client import Consumer
+
 # from router import router
 import asyncio
 import logging
 from common.database import appeals_table, appeals_database, engine, metadata
 from models.appeals import AppealIn
 import sys
+from prometheus_client import Summary, make_asgi_app
 
 logging.basicConfig()
-log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log_formatter = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 log_handler = logging.StreamHandler(sys.stdout)
 log_handler.setFormatter(log_formatter)
 logger.addHandler(log_handler)
 logger.setLevel(logging.DEBUG)
+
+REQUEST_TIME = Summary("save_to_db_time", "Time spent to save")
 
 
 class AppealApp(FastAPI):
@@ -23,17 +29,20 @@ class AppealApp(FastAPI):
         self.consumer = Consumer(self.save_appeal)
 
     @classmethod
+    @REQUEST_TIME.time()
     async def save_appeal(cls, message: Dict):
-        logger.info(f'Incoming message {message}')
+        logger.info(f"Incoming message {message}")
         appeal = AppealIn(**message)
         query = appeals_table.insert().values(id=appeal._id, **appeal.dict())
         await appeals_database.execute(query)
 
 
 app = AppealApp()
+metrics_app = make_asgi_app()
+app.mount("/metrics", metrics_app)
 
 
-@app.on_event('startup')
+@app.on_event("startup")
 async def startup():
     loop = asyncio.get_running_loop()
     await app.consumer.start(loop)
@@ -41,11 +50,11 @@ async def startup():
     await task
     metadata.create_all(engine)
     await appeals_database.connect()
-    logger.info('FastAPI writer was started')
+    logger.info("FastAPI writer was started")
 
 
 @app.on_event("shutdown")
 async def shutdown():
     await appeals_database.disconnect()
     await app.consumer.stop()
-    logger.info('FastAPI writer was shutdown')
+    logger.info("FastAPI writer was shutdown")

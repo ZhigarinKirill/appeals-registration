@@ -4,30 +4,40 @@ from common.rabbit.pika_client import Producer
 import tornado.web
 import logging
 import os
+from tornado_prometheus import PrometheusMixIn, MetricsHandler
 
 logging.basicConfig()
-log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log_formatter = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 log_handler = logging.StreamHandler(sys.stdout)
 log_handler.setFormatter(log_formatter)
 logger.addHandler(log_handler)
 logger.setLevel(logging.DEBUG)
-TORNADO_HOST=os.environ.get('TORNADO_HOST', 'localhost')
-TORNADO_PORT=os.environ.get('TORNADO_PORT', 8888)
+TORNADO_HOST = os.environ.get("TORNADO_HOST", "localhost")
+TORNADO_PORT = os.environ.get("TORNADO_PORT", 8888)
 
 
 class MainHandler(tornado.web.RequestHandler):
     async def post(self):
         message = tornado.escape.json_decode(self.request.body)
-        logger.info(f'Post request with body: {message}')
+        logger.info(f"Post request with body: {message}")
         await self.application.producer.publish(message)
         self.write("OK")
 
 
+class QueueApplication(PrometheusMixIn, tornado.web.Application):
+    pass
+
+
 def make_app():
-    return tornado.web.Application([
-        (r"/register-appeal", MainHandler),
-    ])
+    return QueueApplication(
+        [
+            (r"/register-appeal", MainHandler),
+            (r"/metrics", MetricsHandler),
+        ]
+    )
 
 
 async def main():
@@ -35,10 +45,10 @@ async def main():
     app.producer = Producer()
     loop = asyncio.get_running_loop()
     await app.producer.start(loop)
-    logger.info('Producer was started')
+    logger.info("Producer was started")
     app.listen(TORNADO_PORT)
-    logger.info(f'Tornado API was started. Listening port {TORNADO_PORT}')
-    
+    logger.info(f"Tornado API was started. Listening port {TORNADO_PORT}")
+
     shutdown_event = asyncio.Event()
     await shutdown_event.wait()
-    logger.info('Tornado API was shutdown')
+    logger.info("Tornado API was shutdown")

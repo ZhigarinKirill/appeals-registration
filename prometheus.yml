@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 15s # when Prometheus is pulling data from exporters etc
+  evaluation_interval: 30s # time between each evaluation of Prometheus' alerting rules
+
+scrape_configs:
+  - job_name: appeals-registration
+    static_configs:
+      - targets:
+        - api:8888
+        - appeals_writer:8000
