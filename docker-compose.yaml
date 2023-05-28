@@ -10,6 +10,7 @@ services:
 
   grafana:
     hostname: grafana
+    restart: always
     image: grafana/grafana
     ports:
       - "3000:3000"
@@ -54,7 +55,27 @@ services:
     env_file:
       - .env
     ports:
-      - "8888:8888"
+      - "9001:8888"
+    depends_on:
+      - rabbit
+      - postgres
+    links:
+      - rabbit
+      - postgres
+
+  api-repl:
+    build:
+      context: .
+      dockerfile: ./api/Dockerfile
+    restart: always
+    # networks:
+    #   - appeals_app
+    volumes:
+      - ./api:/api
+    env_file:
+      - .env
+    ports:
+      - "9002:8888"
     depends_on:
       - rabbit
       - postgres
@@ -79,6 +100,16 @@ services:
       - rabbit
     links:
       - rabbit
+
+  nginx:
+    restart: always
+    depends_on:
+      - api-repl
+      - api
+    build:
+      dockerfile: ./nginx/Dockerfile
+    ports:
+      - 80:80
 
 # networks:
 #   appeals_app:
